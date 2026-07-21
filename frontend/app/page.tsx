@@ -8,21 +8,29 @@ import { useState } from "react";
 export default function Home() {
   const [requirement, setRequirement] = useState<string[]>([]);
   const [entities, setEntities] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   async function handleAnalyze() {
-    const response = await fetch("http://localhost:8000/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: requirement,
-      }),
-    });
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:8000/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: requirement,
+        }),
+      });
 
-    const data = await response.json();
-    console.log(data);
-    setEntities(data.entities);
+      const data = await response.json();
+      console.log(data);
+      setEntities(data.entities);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -33,7 +41,7 @@ export default function Home() {
         onChange={setRequirement}
         placeholder="Enter requirements..."
       />
-      <AnalyzeButton onClick={handleAnalyze} />
+      <AnalyzeButton onClick={handleAnalyze} loading={loading} />
 
       {entities.length > 0 && (
         <DisplayOutput>
